@@ -1,5 +1,6 @@
 package vn.vnpay.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 @ChannelHandler.Sharable
 public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> {
     private FeeService feeService;
+    private ObjectMapper objectMapper;
 
     @Inject
     public FeeController(FeeService feeService) {
