@@ -1,7 +1,10 @@
 package vn.vnpay;
 
+import vn.vnpay.server.NettyServer;
+
 public class Demo2Core {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        NettyServer nettyServer = new NettyServer();
+        nettyServer.start();
     }
 }
