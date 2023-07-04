@@ -15,7 +15,7 @@ import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.config.Module;
-import vn.vnpay.controller.FeeController;
+import vn.vnpay.controller.FeeCommandController;
 
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
@@ -41,9 +41,9 @@ public class NettyServer {
                             p.addLast(new HttpObjectAggregator(64 * 1024));
 
                             Injector injector = Guice.createInjector(new Module());
-                            FeeController feeController = injector.getInstance(FeeController.class);
+                            FeeCommandController feeCommandController = injector.getInstance(FeeCommandController.class);
 
-                            p.addLast(feeController);
+                            p.addLast(feeCommandController);
                         }
                     });
 

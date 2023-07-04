@@ -8,19 +8,19 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import vn.vnpay.dto.CreateFeeRequest;
-import vn.vnpay.service.FeeService;
+import vn.vnpay.dto.CreateFeeCommandReq;
+import vn.vnpay.service.FeeCommandService;
 
 import java.nio.charset.StandardCharsets;
 
 @ChannelHandler.Sharable
-public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> {
-    private FeeService feeService;
+public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRequest> {
+    private FeeCommandService feeCommandService;
     private ObjectMapper objectMapper;
 
     @Inject
-    public FeeController(FeeService feeService) {
-        this.feeService = feeService;
+    public FeeCommandController(FeeCommandService feeCommandService) {
+        this.feeCommandService = feeCommandService;
         objectMapper = new ObjectMapper();
     }
 
@@ -29,18 +29,15 @@ public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> 
         HttpMethod method = request.method();
         String uri = request.uri();
 
-        if(HttpMethod.GET.equals(method)){
-            if("/fee".equals(uri)){
+        if (HttpMethod.GET.equals(method)) {
+            if ("/fee".equals(uri)) {
                 listAllFeeCommand(ctx);
             }
-        }
-        else if (HttpMethod.POST.equals(method)) {
+        } else if (HttpMethod.POST.equals(method)) {
             if ("/fee/create".equals(uri)) {
                 handleCreateFee(ctx, request);
             }
         }
-
-
     }
 
     private void listAllFeeCommand(ChannelHandlerContext ctx) throws JsonProcessingException {
@@ -58,8 +55,8 @@ public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> 
     private void handleCreateFee(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException {
         String requestBody = request.content().toString(StandardCharsets.UTF_8);
 
-        CreateFeeRequest createFeeRequest =  objectMapper.readValue(requestBody,CreateFeeRequest.class);
-        feeService.createFee(createFeeRequest);
+        CreateFeeCommandReq createFeeCommandReq = objectMapper.readValue(requestBody, CreateFeeCommandReq.class);
+        feeCommandService.createFeeCommand(createFeeCommandReq);
 
         FullHttpResponse response = createResponse(HttpResponseStatus.OK, "Create fee success");
         ctx.writeAndFlush(response);

@@ -1,5 +1,5 @@
 package vn.vnpay.dto;
-public class CreateFeeRequest {
+public class CreateFeeCommandReq {
     private String requestId;
     private String requestTime;
     private String commandCode;
