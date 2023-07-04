@@ -1,11 +1,14 @@
 package vn.vnpay.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.Inject;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import vn.vnpay.dto.CreateFeeRequest;
 import vn.vnpay.service.FeeService;
 
 import java.nio.charset.StandardCharsets;
@@ -27,13 +30,13 @@ public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> 
         String uri = request.uri();
 
         if(HttpMethod.GET.equals(method)){
-            if("/fee-command".equals(uri)){
+            if("/fee".equals(uri)){
                 listAllFeeCommand(ctx);
             }
         }
         else if (HttpMethod.POST.equals(method)) {
-            if ("/fee-command/add".equals(uri)) {
-                handleAddFeeCommand(ctx, request);
+            if ("/fee/create".equals(uri)) {
+                handleCreateFee(ctx, request);
             }
         }
 
@@ -41,25 +44,24 @@ public class FeeController extends SimpleChannelInboundHandler<FullHttpRequest> 
     }
 
     private void listAllFeeCommand(ChannelHandlerContext ctx) throws JsonProcessingException {
-        List<FeeCommandSearchInfo> feeCommands = feeCommandService.listAllFeeCommand();
-        // Sử dụng Jackson để chuyển đổi danh sách thành chuỗi JSON
+//        List<> feeCommands = feeService.getListFee();
+
         objectMapper.registerModule(new JavaTimeModule());
 
-        String jsonResponse = objectMapper.writeValueAsString(feeCommands);
+        String jsonResponse = "objectMapper.writeValueAsString(feeCommands)";
 
-        // Tạo và gửi response với dữ liệu JSON
         FullHttpResponse response = createResponse(HttpResponseStatus.OK, jsonResponse);
         ctx.writeAndFlush(response);
     }
 
 
-    private void handleAddFeeCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException {
+    private void handleCreateFee(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException {
         String requestBody = request.content().toString(StandardCharsets.UTF_8);
 
-        FeeCommandAddInfo feeCommandAddInfo =  objectMapper.readValue(requestBody,FeeCommandAddInfo.class);
-        feeCommandService.addFeeCommand(feeCommandAddInfo);
+        CreateFeeRequest createFeeRequest =  objectMapper.readValue(requestBody,CreateFeeRequest.class);
+        feeService.createFee(createFeeRequest);
 
-        FullHttpResponse response = createResponse(HttpResponseStatus.CREATED, "FeeCommand created");
+        FullHttpResponse response = createResponse(HttpResponseStatus.OK, "Create fee success");
         ctx.writeAndFlush(response);
     }
 

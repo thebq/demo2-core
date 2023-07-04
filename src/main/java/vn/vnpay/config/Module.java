@@ -1,4 +1,4 @@
-package vn.vnpay;
+package vn.vnpay.config;
 
 import com.google.inject.AbstractModule;
 

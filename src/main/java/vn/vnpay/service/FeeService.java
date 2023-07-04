@@ -1,6 +1,9 @@
 package vn.vnpay.service;
 
+import io.netty.handler.codec.http.FullHttpResponse;
+import vn.vnpay.dto.CreateFeeRequest;
+
 public interface FeeService {
-    public Object createFee();
-    public Object createFeeTransaction();
+    public FullHttpResponse createFee(CreateFeeRequest createFeeRequest);
+    public FullHttpResponse getListFee();
 }

@@ -14,13 +14,13 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vn.vnpay.Module;
+import vn.vnpay.config.Module;
 import vn.vnpay.controller.FeeController;
 
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
 
-    private static final int PORT = 8082;
+    private static final int PORT = 8080;
 
     public void start() {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
@@ -30,7 +30,7 @@ public class NettyServer {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .option(ChannelOption.SO_BACKLOG, 255)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
@@ -48,7 +48,7 @@ public class NettyServer {
                     });
 
             ChannelFuture f = b.bind(PORT).sync();
-            LOGGER.info("Server started and listening on port " + PORT);
+            LOGGER.info("Server started on port: " + PORT);
 
             f.channel().closeFuture().sync();
         } catch (Exception e) {
