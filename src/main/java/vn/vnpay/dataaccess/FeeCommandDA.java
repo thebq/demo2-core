@@ -4,41 +4,111 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.dto.CreateFeeCommandReq;
 import vn.vnpay.dto.CreateFeeTransactionReq;
+import vn.vnpay.model.FeeTransaction;
 
 import java.sql.*;
+import java.util.List;
+import java.util.UUID;
 
 public class FeeCommandDA {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandDA.class);
     private PreparedStatement cstmt;
 
-    public void addFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException {
+    public Boolean addFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
-            String sql = "INSERT INTO feecommand (id, commandcode, totalrecord, totalfee, createuser, createdate) " +
-                    "VALUES (? , ? , ? , ? , ? , ?)";
+            String sql = "INSERT INTO feecommand (commandcode, totalrecord, totalfee, createuser, createdate) " +
+                    "VALUES (? , ? , ? , ? , ?)";
             cstmt = conn.prepareCall(sql);
-            cstmt.setInt(1, 3);
-            cstmt.setString(2, createFeeCommandReq.getCommandCode());
-            cstmt.setInt(3, Integer.parseInt(createFeeCommandReq.getTotalRecord()));
-            cstmt.setInt(4, Integer.parseInt(createFeeCommandReq.getTotalFee()));
-            cstmt.setString(5, createFeeCommandReq.getCreatedUser());
-            cstmt.setDate(6, Date.valueOf(createFeeCommandReq.getCreatedDate()));
+            cstmt.setString(1, createFeeCommandReq.getCommandCode());
+            cstmt.setInt(2, Integer.parseInt(createFeeCommandReq.getTotalRecord()));
+            cstmt.setInt(3, Integer.parseInt(createFeeCommandReq.getTotalFee()));
+            cstmt.setString(4, createFeeCommandReq.getCreatedUser());
+            cstmt.setDate(5, Date.valueOf(createFeeCommandReq.getCreatedDate()));
 
             int row = cstmt.executeUpdate();
-            if (row > 0)
-                LOGGER.info("Add fee command code: {} success", createFeeCommandReq.getCommandCode());
+            if (row > 0) {
+                LOGGER.info("Add fee command code: {} SUCCESS", createFeeCommandReq.getCommandCode());
+                CreateFeeTransactionReq createFeeTransactionReq = new CreateFeeTransactionReq();
+                createFeeTransactionReq.setCommandCode(createFeeCommandReq.getCommandCode());
+                createFeeTransactionReq.setFeeAmount(createFeeCommandReq.getTotalFee());
+                createFeeTransactionReq.setCreateDate(createFeeCommandReq.getCreatedDate());
+                createFeeTransactionReq.setModifiedDate(createFeeCommandReq.getCreatedDate());
+                createFeeTransactionReq.setStatus("01");
+                createFeeTransactionReq.setTotalScan("1");
+                createFeeTransactionReq.setTransactionCode(String.valueOf(UUID.randomUUID()));
+                createFeeTransactionReq.setAccountNumber("1092991010");
+                if (addFeeTransaction(createFeeTransactionReq))
+                    return true;
+            }
         } catch (Exception e) {
-            LOGGER.error("Add fee command code: {} fail, {}", createFeeCommandReq.getCommandCode(), e.getMessage());
+            LOGGER.error("Add fee command code: {} FAIL, {}", createFeeCommandReq.getCommandCode(), e.getMessage());
+            return false;
         } finally {
             if (cstmt != null)
                 cstmt.close();
             if (conn != null)
                 conn.close();
         }
+        return false;
     }
 
-   public void addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) {
+   public Boolean addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
+            String sql = "INSERT INTO feetransaction (transactioncode, commandcode, feeamount, status, accountnumber, " +
+                    "totalscan, remark, createdate, modifieddate) VALUES (? , ? , ? , ? , ? , ? , ? , ? , ?)";
+            cstmt = conn.prepareCall(sql);
+            cstmt.setString(1, feeTransactionReq.getTransactionCode());
+            cstmt.setString(2, feeTransactionReq.getCommandCode());
+            cstmt.setInt(3, Integer.parseInt(feeTransactionReq.getFeeAmount()));
+            cstmt.setString(4, feeTransactionReq.getStatus());
+            cstmt.setString(5, feeTransactionReq.getAccountNumber());
+            cstmt.setInt(6, Integer.parseInt(feeTransactionReq.getTotalScan()));
+            cstmt.setString(7, feeTransactionReq.getRemark());
+            cstmt.setDate(8, Date.valueOf(feeTransactionReq.getCreateDate()));
+            cstmt.setDate(9, Date.valueOf(feeTransactionReq.getModifiedDate()));
 
+            int row = cstmt.executeUpdate();
+            if (row > 0) {
+                LOGGER.info("Add fee transaction SUCCESS, transaction code: {}, command code: {}",
+                        feeTransactionReq.getTransactionCode(), feeTransactionReq.getCommandCode());
+                return true;
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Add fee transaction FAIL, transaction code: {}, command code: {}, {}",
+                    feeTransactionReq.getTransactionCode(), feeTransactionReq.getCommandCode(), e.getMessage());
+            return false;
+        } finally {
+            if (cstmt != null)
+                cstmt.close();
+            if (conn != null)
+                conn.close();
+        }
+        return false;
    }
+
+   public List<FeeTransaction> getFeeTransactionByCmdCode(String commandCode) {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
+            String sql = "SELECT * FROM feetransaction WHERE feetransaction.commandcode = '" + commandCode + "'";
+            cstmt = conn.prepareCall(sql);
+            ResultSet rs = cstmt.executeQuery();
+            while (rs.next()) {
+                FeeTransaction feeTransaction = new FeeTransaction();
+                feeTransaction.setTransactionCode(rs.getString("transactioncode"));
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+   }
+
+    public static void main(String[] args) {
+        FeeCommandDA feeCommandDA = new FeeCommandDA();
+        feeCommandDA.getFeeTransactionByCmdCode("FC230623523226");
+    }
 }
