@@ -7,6 +7,7 @@ import vn.vnpay.dto.CreateFeeTransactionReq;
 import vn.vnpay.model.FeeTransaction;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,7 +55,7 @@ public class FeeCommandDA {
         return false;
     }
 
-   public Boolean addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) throws SQLException {
+    public Boolean addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) throws SQLException {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
@@ -88,10 +89,12 @@ public class FeeCommandDA {
                 conn.close();
         }
         return false;
-   }
+    }
 
-   public List<FeeTransaction> getFeeTransactionByCmdCode(String commandCode) {
+    public List<FeeTransaction> getFeeTransactionByCmdCode(String commandCode) throws SQLException {
         Connection conn = null;
+        List<FeeTransaction> feeTransactionList = new ArrayList<>();
+        LOGGER.info("START Get fee transaction by command code: {}", commandCode);
         try {
             conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
             String sql = "SELECT * FROM feetransaction WHERE feetransaction.commandcode = '" + commandCode + "'";
@@ -100,15 +103,38 @@ public class FeeCommandDA {
             while (rs.next()) {
                 FeeTransaction feeTransaction = new FeeTransaction();
                 feeTransaction.setTransactionCode(rs.getString("transactioncode"));
+                feeTransaction.setCommandCode(rs.getString("commandcode"));
+                feeTransaction.setFeeAmount(rs.getInt("feeamount"));
+                feeTransaction.setStatus(rs.getString("status"));
+                feeTransaction.setAccountNumber(rs.getString("accountnumber"));
+                feeTransaction.setTotalScan(rs.getInt("totalscan"));
+                feeTransaction.setRemark(rs.getString("remark"));
+                feeTransaction.setCreateDate(rs.getDate("createdate"));
+                feeTransaction.setModifiedDate(rs.getDate("modifieddate"));
+                feeTransactionList.add(feeTransaction);
             }
+        } catch (SQLException e) {
+            LOGGER.error("Get fee transaction by command code: {} FAIL", commandCode);
             return null;
+        } finally {
+            if (cstmt != null)
+                cstmt.close();
+            if (conn != null)
+                conn.close();
+        }
+        LOGGER.info("FINISH Get fee transaction by command code: {}", commandCode);
+        return feeTransactionList;
+    }
+
+    public Boolean updateFeeTransaction(FeeTransaction feeTransaction) {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vnpay");
+            String sql = "";
+            cstmt = conn.prepareCall(sql);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-   }
-
-    public static void main(String[] args) {
-        FeeCommandDA feeCommandDA = new FeeCommandDA();
-        feeCommandDA.getFeeTransactionByCmdCode("FC230623523226");
+        return false;
     }
 }
