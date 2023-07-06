@@ -7,5 +7,5 @@ import java.sql.SQLException;
 
 public interface FeeCommandService {
     public FullHttpResponse createFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException;
-    public FullHttpResponse updateFeeTransaction(String pathParam);
+    public FullHttpResponse updateFeeTransaction(String pathParam) throws SQLException;
 }
