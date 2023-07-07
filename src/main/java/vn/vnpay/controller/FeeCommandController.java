@@ -45,7 +45,7 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
         }
     }
 
-    private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws JsonProcessingException {
+    private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws SQLException {
 
         FullHttpResponse response = feeCommandService.updateFeeTransaction(pathParam);
         ctx.writeAndFlush(response);

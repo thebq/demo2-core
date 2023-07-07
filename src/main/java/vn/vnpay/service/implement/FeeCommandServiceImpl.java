@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import vn.vnpay.dataaccess.FeeCommandDA;
 import vn.vnpay.dto.CreateFeeCommandReq;
 import vn.vnpay.dto.CreateFeeTransactionReq;
+import vn.vnpay.enums.FeeCommandStatus;
 import vn.vnpay.model.FeeCommand;
 import vn.vnpay.model.FeeTransaction;
 import vn.vnpay.service.FeeCommandService;
@@ -27,7 +28,15 @@ public class FeeCommandServiceImpl implements FeeCommandService {
 
     @Override
     public FullHttpResponse createFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException {
+        LOGGER.info("START create fee command code: {}", createFeeCommandReq.getCommandCode());
         FullHttpResponse response = validationService.validationFeeCommand(createFeeCommandReq);
+        if (!checkRequest(createFeeCommandReq.getRequestId(), createFeeCommandReq.getRequestTime())) {
+            return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Request Id exist or Request time expire");
+        } else {
+            long millis = System.currentTimeMillis();
+            Date date = new Date(millis);
+            redisService.setValueToRedis(String.valueOf(date), createFeeCommandReq.getRequestId());
+        }
         if (Objects.nonNull(response))
             return response;
         List<FeeCommand> feeCommandList = feeCommandDA.getAllFeeCommand();
@@ -51,7 +60,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             createFeeTransactionReq.setFeeAmount("200");
             createFeeTransactionReq.setCreateDate(createFeeCommandReq.getCreatedDate());
             createFeeTransactionReq.setModifiedDate(createFeeCommandReq.getCreatedDate());
-            createFeeTransactionReq.setStatus("01");
+            createFeeTransactionReq.setStatus(FeeCommandStatus.KHOI_TAO.getCode());
             createFeeTransactionReq.setTotalScan("0");
             createFeeTransactionReq.setTransactionCode(String.valueOf(UUID.randomUUID()));
             createFeeTransactionReq.setAccountNumber("1092991010");
@@ -70,12 +79,13 @@ public class FeeCommandServiceImpl implements FeeCommandService {
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Bad Request");
             }
         }
-
+        LOGGER.info("FINISH create fee command code: {}", createFeeCommandReq.getCommandCode());
         return feeCommandUtil.createResponse(HttpResponseStatus.OK, "Success");
     }
 
     @Override
     public FullHttpResponse updateFeeTransaction(String pathParam) throws SQLException {
+        LOGGER.info("START update fee transaction by command code: {}", pathParam);
         List<FeeTransaction> feeTransactionList = feeCommandDA.getFeeTransactionByCmdCode(pathParam);
         if (Objects.isNull(feeTransactionList))
             return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Bad Request");
@@ -83,16 +93,17 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             return feeCommandUtil.createResponse(HttpResponseStatus.NO_CONTENT, "No Content");
 
         for (FeeTransaction feeTransaction : feeTransactionList) {
-            if (Objects.equals(0, feeTransaction.getTotalScan()) && "01".equalsIgnoreCase(feeTransaction.getStatus())) {
+            if (Objects.equals(0, feeTransaction.getTotalScan())
+                    && FeeCommandStatus.KHOI_TAO.getCode().equalsIgnoreCase(feeTransaction.getStatus())) {
                 feeCommandDA.updateFeeTransaction(feeTransaction);
             }
         }
-
+        LOGGER.info("FINISH update fee transaction by command code: {}", pathParam);
         return feeCommandUtil.createResponse(HttpResponseStatus.OK, "Success");
     }
 
     public Boolean checkRequest(String requestId, String requestTime) {
-        long millis=System.currentTimeMillis();
+        long millis = System.currentTimeMillis();
         Date date = new Date(millis);
         List<String> requestIdList = redisService.getRequestIdByDate(String.valueOf(date));
         if (requestIdList.contains(requestId))

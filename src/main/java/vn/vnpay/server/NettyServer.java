@@ -1,5 +1,7 @@
 package vn.vnpay.server;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,17 +12,26 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.config.Module;
 import vn.vnpay.controller.FeeCommandController;
+import vn.vnpay.utils.LocalProperties;
+
+import java.io.IOException;
 
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
 
-    private static final int PORT = 8080;
+    private static int PORT = 0;
+
+    static {
+        try {
+            PORT = Integer.parseInt(String.valueOf(LocalProperties.get("netty-port")));
+        } catch (IOException e) {
+            LOGGER.error("Load config FAIL");
+        }
+    }
 
     public void start() {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
