@@ -108,7 +108,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
         List<String> requestIdList = redisService.getRequestIdByDate(String.valueOf(date));
         if (requestIdList.contains(requestId))
             return false;
-        if (millis - Long.parseLong(requestTime) > 600000)
+        if (millis - Long.parseLong(requestTime) > 600000 || Long.parseLong(requestTime) - millis > 600000)
             return false;
         return true;
     }
