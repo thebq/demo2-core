@@ -7,6 +7,6 @@ public class CronJob {
     public static void main(String[] args) {
         Timer timer = new Timer();
         TimerTask task = new MyTask();
-        timer.schedule(task, 180000);
+        timer.schedule(task, 0,18000);
     }
 }

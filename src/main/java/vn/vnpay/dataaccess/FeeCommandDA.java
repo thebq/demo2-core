@@ -161,7 +161,7 @@ public class FeeCommandDA {
             long millis = System.currentTimeMillis();
             Date date = new Date(millis);
             cstmt.setDate(2, date);
-            cstmt.setString(3, FeeCommandStatus.THU_PHI.getCode());
+            cstmt.setString(3, feeTransaction.getStatus());
             int row = cstmt.executeUpdate();
             if (row > 0) {
                 LOGGER.info("Update fee transaction SUCCESS, transaction code: {}, command code: {}",

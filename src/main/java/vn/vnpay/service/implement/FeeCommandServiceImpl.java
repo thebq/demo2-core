@@ -95,6 +95,8 @@ public class FeeCommandServiceImpl implements FeeCommandService {
         for (FeeTransaction feeTransaction : feeTransactionList) {
             if (Objects.equals(0, feeTransaction.getTotalScan())
                     && FeeCommandStatus.KHOI_TAO.getCode().equalsIgnoreCase(feeTransaction.getStatus())) {
+                feeTransaction.setTotalScan(1);
+                feeTransaction.setStatus(FeeCommandStatus.THU_PHI.getCode());
                 feeCommandDA.updateFeeTransaction(feeTransaction);
             }
         }
