@@ -1,4 +1,4 @@
-package vn.vnpay.utils;
+package vn.vnpay.util;
 
 import java.io.FileReader;
 import java.io.IOException;

@@ -1,5 +1,7 @@
 package vn.vnpay.service.implement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -10,8 +12,9 @@ import vn.vnpay.dto.CreateFeeTransactionReq;
 import vn.vnpay.enums.FeeCommandStatus;
 import vn.vnpay.model.FeeCommand;
 import vn.vnpay.model.FeeTransaction;
+import vn.vnpay.model.Result;
 import vn.vnpay.service.FeeCommandService;
-import vn.vnpay.utils.FeeCommandUtil;
+import vn.vnpay.util.FeeCommandUtil;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -24,21 +27,26 @@ public class FeeCommandServiceImpl implements FeeCommandService {
     private FeeCommandUtil feeCommandUtil = new FeeCommandUtil();
     private FeeCommandDA feeCommandDA = new FeeCommandDA();
     private RedisService redisService = new RedisService();
+    private ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandServiceImpl.class);
 
     @Override
-    public FullHttpResponse createFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException {
+    public FullHttpResponse createFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException, JsonProcessingException {
         LOGGER.info("START create fee command code: {}", createFeeCommandReq.getCommandCode());
         FullHttpResponse response = validationService.validationFeeCommand(createFeeCommandReq);
+
+        if (Objects.nonNull(response))
+            return response;
+
         if (!checkRequest(createFeeCommandReq.getRequestId(), createFeeCommandReq.getRequestTime())) {
-            return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Request Id exist or Request time expire");
+            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                    "Request Id exist or Request time expire", null);
+            return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
         } else {
             long millis = System.currentTimeMillis();
             Date date = new Date(millis);
-            redisService.setValueToRedis(String.valueOf(date), createFeeCommandReq.getRequestId());
+            redisService.setValueToRedis(String.format("%s%s", date, createFeeCommandReq.getRequestId()), createFeeCommandReq.getRequestId());
         }
-        if (Objects.nonNull(response))
-            return response;
         List<FeeCommand> feeCommandList = feeCommandDA.getAllFeeCommand();
 
         boolean checkCommandCodeExist = false;
@@ -71,26 +79,39 @@ public class FeeCommandServiceImpl implements FeeCommandService {
                         totalFee + Integer.parseInt(createFeeTransactionReq.getFeeAmount()));
             } else {
                 LOGGER.error("Save fee command to database Fail");
-                return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Bad Request");
+                Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                        "Bad Request", null);
+                return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
         } else {
             if (!feeCommandDA.addFeeCommand(createFeeCommandReq)) {
                 LOGGER.error("Save fee command to database Fail");
-                return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Bad Request");
+                Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                        "Bad Request", null);
+                return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
         }
         LOGGER.info("FINISH create fee command code: {}", createFeeCommandReq.getCommandCode());
-        return feeCommandUtil.createResponse(HttpResponseStatus.OK, "Success");
+
+        Result result = new Result(String.valueOf(HttpResponseStatus.OK.code()),
+                "Success", null);
+        return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
     }
 
     @Override
-    public FullHttpResponse updateFeeTransaction(String pathParam) throws SQLException {
+    public FullHttpResponse updateFeeTransaction(String pathParam) throws SQLException, JsonProcessingException {
         LOGGER.info("START update fee transaction by command code: {}", pathParam);
         List<FeeTransaction> feeTransactionList = feeCommandDA.getFeeTransactionByCmdCode(pathParam);
-        if (Objects.isNull(feeTransactionList))
-            return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, "Bad Request");
-        if (feeTransactionList.isEmpty())
-            return feeCommandUtil.createResponse(HttpResponseStatus.NO_CONTENT, "No Content");
+        if (Objects.isNull(feeTransactionList)) {
+            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                    "Bad Request", null);
+            return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
+        }
+        if (feeTransactionList.isEmpty()) {
+            Result result = new Result(String.valueOf(HttpResponseStatus.NO_CONTENT.code()),
+                    "No Content", null);
+            return feeCommandUtil.createResponse(HttpResponseStatus.NO_CONTENT, result.toString());
+        }
 
         for (FeeTransaction feeTransaction : feeTransactionList) {
             if (Objects.equals(0, feeTransaction.getTotalScan())
@@ -101,17 +122,17 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             }
         }
         LOGGER.info("FINISH update fee transaction by command code: {}", pathParam);
-        return feeCommandUtil.createResponse(HttpResponseStatus.OK, "Success");
+
+        Result result = new Result(String.valueOf(HttpResponseStatus.OK.code()),
+                "Success", null);
+        return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
     }
 
     public Boolean checkRequest(String requestId, String requestTime) {
         long millis = System.currentTimeMillis();
         Date date = new Date(millis);
-        List<String> requestIdList = redisService.getRequestIdByDate(String.valueOf(date));
-        if (requestIdList.contains(requestId))
-            return false;
         if (millis - Long.parseLong(requestTime) > 600000 || Long.parseLong(requestTime) - millis > 600000)
             return false;
-        return true;
+        return !redisService.checkExist(String.valueOf(date), requestId);
     }
 }

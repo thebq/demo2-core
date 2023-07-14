@@ -8,7 +8,7 @@ import vn.vnpay.dto.CreateFeeTransactionReq;
 import vn.vnpay.enums.FeeCommandStatus;
 import vn.vnpay.model.FeeCommand;
 import vn.vnpay.model.FeeTransaction;
-import vn.vnpay.utils.LocalProperties;
+import vn.vnpay.util.LocalProperties;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -155,13 +155,14 @@ public class FeeCommandDA {
                 feeTransaction.getTransactionCode(), feeTransaction.getCommandCode());
         try {
             conn = connectionPool.getConnection();
-            String sql = "UPDATE feetransaction SET totalscan = ?, modifieddate = ?, status = ?";
+            String sql = "UPDATE feetransaction SET totalscan = ?, modifieddate = ?, status = ? WHERE transactioncode = ?";
             cstmt = conn.prepareCall(sql);
             cstmt.setInt(1, feeTransaction.getTotalScan());
             long millis = System.currentTimeMillis();
             Date date = new Date(millis);
             cstmt.setDate(2, date);
             cstmt.setString(3, feeTransaction.getStatus());
+            cstmt.setString(4, feeTransaction.getTransactionCode());
             int row = cstmt.executeUpdate();
             if (row > 0) {
                 LOGGER.info("Update fee transaction SUCCESS, transaction code: {}, command code: {}",

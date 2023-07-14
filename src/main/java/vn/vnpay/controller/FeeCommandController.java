@@ -7,12 +7,15 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import vn.vnpay.model.FeeTask;
 import vn.vnpay.dto.CreateFeeCommandReq;
 import vn.vnpay.service.FeeCommandService;
-import vn.vnpay.utils.FeeCommandUtil;
+import vn.vnpay.util.FeeCommandUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @ChannelHandler.Sharable
 public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRequest> {
@@ -34,29 +37,39 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
         String pathParam = uriSplit[uriSplit.length-1];
 
         if (HttpMethod.PUT.equals(method)) {
-            String path = "/fee/" + pathParam;
+            String path = "/fee/update" + pathParam;
             if (path.equals(uri)) {
                 updateFeeTransaction(ctx, pathParam);
             }
         } else if (HttpMethod.POST.equals(method)) {
             if ("/fee/create".equals(uri)) {
-                handleCreateFee(ctx, request);
+                createFeeCommand(ctx, request);
+            }
+        } else if (HttpMethod.GET.equals(method)) {
+            if ("/fee/cronjob".equals(uri)) {
+                startCronJob();
             }
         }
     }
 
-    private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws SQLException {
+    private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws SQLException, JsonProcessingException {
 
         FullHttpResponse response = feeCommandService.updateFeeTransaction(pathParam);
         ctx.writeAndFlush(response);
     }
 
 
-    private void handleCreateFee(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException, SQLException {
+    private void createFeeCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException, SQLException {
         String requestBody = request.content().toString(StandardCharsets.UTF_8);
         CreateFeeCommandReq createFeeCommandReq = objectMapper.readValue(requestBody, CreateFeeCommandReq.class);
 
         FullHttpResponse response = feeCommandService.createFeeCommand(createFeeCommandReq);
         ctx.writeAndFlush(response);
+    }
+
+    private void startCronJob() {
+        Timer timer = new Timer();
+        TimerTask task = new FeeTask();
+        timer.schedule(task, 0,18000);
     }
 }

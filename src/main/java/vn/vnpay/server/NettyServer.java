@@ -16,14 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.config.Module;
 import vn.vnpay.controller.FeeCommandController;
-import vn.vnpay.utils.LocalProperties;
+import vn.vnpay.util.LocalProperties;
 
 import java.io.IOException;
 
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
 
-    private static int PORT = 0;
+    private static int PORT;
 
     static {
         try {
@@ -63,7 +63,7 @@ public class NettyServer {
 
             f.channel().closeFuture().sync();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Start server FAIL");
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

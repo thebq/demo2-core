@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import vn.vnpay.utils.LocalProperties;
+import vn.vnpay.util.LocalProperties;
 
 import java.util.List;
 
@@ -38,10 +38,10 @@ public class RedisService {
         releaseConnection(jedis);
     }
 
-    public List<String> getRequestIdByDate(String date) {
+    public Boolean checkExist(String date, String requestId) {
         Jedis jedis = getConnection();
-        List<String> requestIdList = jedis.lrange(date, 0, 99999);
+        boolean check = jedis.exists(String.format("%s%s", date, requestId));
         releaseConnection(jedis);
-        return requestIdList;
+        return check;
     }
 }
