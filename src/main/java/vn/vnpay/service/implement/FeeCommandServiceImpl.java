@@ -23,16 +23,24 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class FeeCommandServiceImpl implements FeeCommandService {
-    private ValidationService validationService = new ValidationService();
-    private FeeCommandUtil feeCommandUtil = new FeeCommandUtil();
-    private FeeCommandDA feeCommandDA = new FeeCommandDA();
-    private RedisService redisService = new RedisService();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ValidationService validationService;
+    private final FeeCommandUtil feeCommandUtil;
+    private final FeeCommandDA feeCommandDA;
+    private final RedisService redisService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandServiceImpl.class);
+
+    public FeeCommandServiceImpl(ValidationService validationService, FeeCommandUtil feeCommandUtil,
+                                 FeeCommandDA feeCommandDA, RedisService redisService) {
+        this.validationService = validationService;
+        this.feeCommandUtil = feeCommandUtil;
+        this.feeCommandDA = feeCommandDA;
+        this.redisService = redisService;
+    }
 
     @Override
     public FullHttpResponse createFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException, JsonProcessingException {
         LOGGER.info("START create fee command code: {}", createFeeCommandReq.getCommandCode());
+        // TODO: add validate
         FullHttpResponse response = validationService.validationFeeCommand(createFeeCommandReq);
 
         if (Objects.nonNull(response))
@@ -65,7 +73,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
         if (checkCommandCodeExist) {
             CreateFeeTransactionReq createFeeTransactionReq = new CreateFeeTransactionReq();
             createFeeTransactionReq.setCommandCode(createFeeCommandReq.getCommandCode());
-            createFeeTransactionReq.setFeeAmount("200");
+            createFeeTransactionReq.setFeeAmount(createFeeCommandReq.getTotalFee());
             createFeeTransactionReq.setCreateDate(createFeeCommandReq.getCreatedDate());
             createFeeTransactionReq.setModifiedDate(createFeeCommandReq.getCreatedDate());
             createFeeTransactionReq.setStatus(FeeCommandStatus.KHOI_TAO.getCode());
@@ -78,14 +86,14 @@ public class FeeCommandServiceImpl implements FeeCommandService {
                         totalRecord + 1,
                         totalFee + Integer.parseInt(createFeeTransactionReq.getFeeAmount()));
             } else {
-                LOGGER.error("Save fee command to database Fail");
+                LOGGER.info("Save fee command to database Fail");
                 Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
                         "Bad Request", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
         } else {
             if (!feeCommandDA.addFeeCommand(createFeeCommandReq)) {
-                LOGGER.error("Save fee command to database Fail");
+                LOGGER.info("Save fee command to database Fail");
                 Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
                         "Bad Request", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
@@ -131,6 +139,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
     public Boolean checkRequest(String requestId, String requestTime) {
         long millis = System.currentTimeMillis();
         Date date = new Date(millis);
+        // TODO: move to config
         if (millis - Long.parseLong(requestTime) > 600000 || Long.parseLong(requestTime) - millis > 600000)
             return false;
         return !redisService.checkExist(String.valueOf(date), requestId);

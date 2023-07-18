@@ -28,7 +28,7 @@ public class FeeTask extends TimerTask {
                 feeCommandDA.updateFeeTransaction(feeTransaction);
             }
         } catch (SQLException e) {
-            LOGGER.error("CRon job Fail {}", e.getMessage());
+            LOGGER.error("Cron job Fail {}", e.getMessage());
         }
         LOGGER.info("FINISH cron job");
     }

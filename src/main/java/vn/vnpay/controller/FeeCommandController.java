@@ -30,26 +30,30 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
         HttpMethod method = request.method();
         String uri = request.uri();
         String[] uriSplit = uri.split("/");
         String pathParam = uriSplit[uriSplit.length-1];
+        try {
+            if (HttpMethod.PUT.equals(method)) {
+                String path = "/fee/update/" + pathParam;
+                if (path.equals(uri)) {
+                    updateFeeTransaction(ctx, pathParam);
+                }
+            } else if (HttpMethod.POST.equals(method)) {
+                if ("/fee/create".equals(uri)) {
+                    createFeeCommand(ctx, request);
+                }
+            } else if (HttpMethod.GET.equals(method)) {
+                if ("/fee/cronjob".equals(uri)) {
+                    startCronJob();
+                }
+            }
+        } catch (Exception e) {
 
-        if (HttpMethod.PUT.equals(method)) {
-            String path = "/fee/update" + pathParam;
-            if (path.equals(uri)) {
-                updateFeeTransaction(ctx, pathParam);
-            }
-        } else if (HttpMethod.POST.equals(method)) {
-            if ("/fee/create".equals(uri)) {
-                createFeeCommand(ctx, request);
-            }
-        } else if (HttpMethod.GET.equals(method)) {
-            if ("/fee/cronjob".equals(uri)) {
-                startCronJob();
-            }
         }
+
     }
 
     private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws SQLException, JsonProcessingException {

@@ -20,7 +20,7 @@ public class ValidationService {
     public FullHttpResponse validationFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws JsonProcessingException {
         FullHttpResponse response = null;
         if (Objects.isNull(createFeeCommandReq)) {
-            LOGGER.warn("Body request is missing");
+            LOGGER.info("Body request is missing");
             Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
                     "Body request is missing", null);
             response = feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
