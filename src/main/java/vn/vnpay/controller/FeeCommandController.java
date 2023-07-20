@@ -33,32 +33,26 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
         HttpMethod method = request.method();
         String uri = request.uri();
-        String[] uriSplit = uri.split("/");
-        String pathParam = uriSplit[uriSplit.length-1];
         try {
             if (HttpMethod.PUT.equals(method)) {
-                String path = "/fee/update/" + pathParam;
+                String path = "/fee/update/";
                 if (path.equals(uri)) {
-                    updateFeeTransaction(ctx, pathParam);
+                    updateFeeTransaction(ctx, request);
                 }
             } else if (HttpMethod.POST.equals(method)) {
                 if ("/fee/create".equals(uri)) {
                     createFeeCommand(ctx, request);
                 }
-            } else if (HttpMethod.GET.equals(method)) {
-                if ("/fee/cronjob".equals(uri)) {
-                    startCronJob();
-                }
             }
         } catch (Exception e) {
-
+            L
         }
 
     }
 
-    private void updateFeeTransaction(ChannelHandlerContext ctx, String pathParam) throws SQLException, JsonProcessingException {
+    private void updateFeeTransaction(ChannelHandlerContext ctx, FullHttpRequest request) throws SQLException, JsonProcessingException {
 
-        FullHttpResponse response = feeCommandService.updateFeeTransaction(pathParam);
+        FullHttpResponse response = feeCommandService.updateFeeTransaction(request);
         ctx.writeAndFlush(response);
     }
 
@@ -69,11 +63,5 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
 
         FullHttpResponse response = feeCommandService.createFeeCommand(createFeeCommandReq);
         ctx.writeAndFlush(response);
-    }
-
-    private void startCronJob() {
-        Timer timer = new Timer();
-        TimerTask task = new FeeTask();
-        timer.schedule(task, 0,18000);
     }
 }

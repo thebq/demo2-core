@@ -11,19 +11,7 @@ import java.util.List;
 
 public class RedisService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
-    private static JedisPool jedisPool = new JedisPool();
-
-    static {
-        try {
-            String redisHost = String.valueOf(LocalProperties.get("redis-host"));
-            int port = Integer.parseInt(String.valueOf(LocalProperties.get("redis-port")));
-            JedisPoolConfig poolConfig = new JedisPoolConfig();
-            jedisPool = new JedisPool(poolConfig, redisHost, port);
-        } catch (Exception e) {
-            LOGGER.error("Create redis connect pool FAIL");
-        }
-    }
-
+    private static final JedisPool jedisPool = new JedisPool();
     public static Jedis getConnection() {
         return jedisPool.getResource();
     }

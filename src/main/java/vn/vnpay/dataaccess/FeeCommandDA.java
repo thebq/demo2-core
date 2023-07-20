@@ -10,37 +10,23 @@ import vn.vnpay.model.FeeCommand;
 import vn.vnpay.model.FeeTransaction;
 import vn.vnpay.util.LocalProperties;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static vn.vnpay.Demo2Core.connectionPool;
+
 public class FeeCommandDA {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandDA.class);
     private PreparedStatement cstmt;
-    private GenericDA genericDA = new GenericDA();
-    private static ComboPooledDataSource connectionPool = new ComboPooledDataSource();
+    private final GenericDA genericDA = new GenericDA();
 
-    static {
-        try {
-            String jdbcUrl = String.valueOf(LocalProperties.get("url"));
-            String userName = String.valueOf(LocalProperties.get("username"));
-            String password = String.valueOf(LocalProperties.get("password"));
-            Integer minPoolSize = Integer.parseInt(String.valueOf(LocalProperties.get("min-pool-size")));
-            Integer maxPoolSize = Integer.parseInt(String.valueOf(LocalProperties.get("max-pool-size")));
-
-            connectionPool.setJdbcUrl(jdbcUrl);
-            connectionPool.setUser(userName);
-            connectionPool.setPassword(password);
-            connectionPool.setMinPoolSize(minPoolSize);
-            connectionPool.setInitialPoolSize(minPoolSize);
-            connectionPool.setMaxPoolSize(maxPoolSize);
-        } catch (Exception e) {
-            LOGGER.error("Create connect pool FAIL");
-        }
-    }
-
-    public Boolean addFeeCommand(CreateFeeCommandReq createFeeCommandReq) throws SQLException {
+    public Boolean addFeeCommand(CreateFeeCommandReq createFeeCommandReq) {
         Connection conn = null;
         try {
             conn = connectionPool.getConnection();
@@ -78,7 +64,7 @@ public class FeeCommandDA {
         return false;
     }
 
-    public Boolean addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) throws SQLException {
+    public Boolean addFeeTransaction(CreateFeeTransactionReq feeTransactionReq) {
         Connection conn = null;
         try {
             conn = connectionPool.getConnection();
@@ -114,7 +100,7 @@ public class FeeCommandDA {
         return false;
     }
 
-    public List<FeeTransaction> getFeeTransactionByCmdCode(String commandCode) throws SQLException {
+    public List<FeeTransaction> getFeeTransactionByCmdCode(String commandCode) {
         Connection conn = null;
         ResultSet rs = null;
         List<FeeTransaction> feeTransactionList = new ArrayList<>();
@@ -179,7 +165,7 @@ public class FeeCommandDA {
                 feeTransaction.getTransactionCode(), feeTransaction.getCommandCode());
     }
 
-    public List<FeeCommand> getAllFeeCommand() throws SQLException {
+    public List<FeeCommand> getAllFeeCommand() {
         Connection conn = null;
         ResultSet rs = null;
         List<FeeCommand> feeCommandList = new ArrayList<>();
