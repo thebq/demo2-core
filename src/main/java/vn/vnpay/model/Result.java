@@ -40,7 +40,6 @@ public class Result {
         return String.format("{" +
                 "\"code\":\"%s\"," +
                 "\"message\":\"%s\"," +
-                "\"data\":\"%s\"" +
-                "}", code, message, data);
+                "\"data\":%s}", code, message, data);
     }
 }

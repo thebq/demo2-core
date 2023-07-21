@@ -6,22 +6,22 @@ import com.google.inject.Inject;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
-import vn.vnpay.model.FeeTask;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vn.vnpay.dto.CreateFeeCommandReq;
+import vn.vnpay.dto.UpdateFeeCommandReq;
 import vn.vnpay.service.FeeCommandService;
-import vn.vnpay.util.FeeCommandUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @ChannelHandler.Sharable
 public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRequest> {
-    private FeeCommandService feeCommandService;
-    private ObjectMapper objectMapper;
-    private FeeCommandUtil feeCommandUtil = new FeeCommandUtil();
+    private final FeeCommandService feeCommandService;
+    private final ObjectMapper objectMapper;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandController.class);
 
     @Inject
     public FeeCommandController(FeeCommandService feeCommandService) {
@@ -45,19 +45,20 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
                 }
             }
         } catch (Exception e) {
-            L
+            LOGGER.error("Fail to request. {}", e.getMessage());
         }
 
     }
 
-    private void updateFeeTransaction(ChannelHandlerContext ctx, FullHttpRequest request) throws SQLException, JsonProcessingException {
+    private void updateFeeTransaction(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException {
+        String requestBody = request.content().toString(StandardCharsets.UTF_8);
+        UpdateFeeCommandReq updateFeeCommandReq = objectMapper.readValue(requestBody, UpdateFeeCommandReq.class);
 
-        FullHttpResponse response = feeCommandService.updateFeeTransaction(request);
+        FullHttpResponse response = feeCommandService.updateFeeTransaction(updateFeeCommandReq);
         ctx.writeAndFlush(response);
     }
 
-
-    private void createFeeCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException, SQLException {
+    private void createFeeCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws JsonProcessingException {
         String requestBody = request.content().toString(StandardCharsets.UTF_8);
         CreateFeeCommandReq createFeeCommandReq = objectMapper.readValue(requestBody, CreateFeeCommandReq.class);
 

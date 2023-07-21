@@ -98,6 +98,12 @@
             <artifactId>c3p0</artifactId>
             <version>0.9.2.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.aventrix.jnanoid</groupId>
+            <artifactId>jnanoid</artifactId>
+            <version>2.0.0</version>
+        </dependency>
     </dependencies>
 
 </project>

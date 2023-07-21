@@ -21,8 +21,8 @@ public class Demo2Core {
         dbConfig();
         redisConfig();
         NettyServer nettyServer = new NettyServer();
-        nettyServer.start();
         startCronJob();
+        nettyServer.start();
     }
 
     private static void dbConfig() {

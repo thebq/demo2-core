@@ -1,4 +1,7 @@
 package vn.vnpay.dto;
+
+import java.util.List;
+
 public class CreateFeeCommandReq {
     private String requestId;
     private String requestTime;
@@ -7,6 +10,16 @@ public class CreateFeeCommandReq {
     private String totalFee;
     private String createdUser;
     private String createdDate;
+
+    public List<CreateFeeTransactionReq> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<CreateFeeTransactionReq> transactions) {
+        this.transactions = transactions;
+    }
+
+    private List<CreateFeeTransactionReq> transactions;
 
     public String getRequestId() {
         return requestId;
