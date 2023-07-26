@@ -1,6 +1,7 @@
 package vn.vnpay.demo2.service.implement;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.google.inject.Inject;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
     private final FeeCommandDA feeCommandDA;
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandServiceImpl.class);
 
+    @Inject
     public FeeCommandServiceImpl(ValidationService validationService, FeeCommandUtil feeCommandUtil, FeeCommandDA feeCommandDA) {
         this.validationService = validationService;
         this.feeCommandUtil = feeCommandUtil;

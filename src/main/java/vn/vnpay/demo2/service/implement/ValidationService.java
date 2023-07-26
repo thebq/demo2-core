@@ -43,7 +43,7 @@ public class ValidationService {
         long millis = System.currentTimeMillis();
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(requestTime,
-                    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             long request = localDateTime
                     .atZone(ZoneId.systemDefault())
                     .toInstant().toEpochMilli();

@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,9 @@ public class FeeCommandDA {
             cstmt.setInt(2, Integer.parseInt(createFeeCommandReq.getTotalRecord()));
             cstmt.setInt(3, Integer.parseInt(createFeeCommandReq.getTotalFee()));
             cstmt.setString(4, createFeeCommandReq.getCreatedUser());
-            cstmt.setDate(5, Date.valueOf(createFeeCommandReq.getCreatedDate()));
+            LocalDateTime localDateTime = LocalDateTime.parse(String.valueOf(LocalDateTime.now()),
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            cstmt.setString(5, String.valueOf(localDateTime));
 
             int row = cstmt.executeUpdate();
             if (row > 0) {
@@ -64,9 +67,10 @@ public class FeeCommandDA {
             cstmt.setString(5, feeTransactionReq.getAccountNumber());
             cstmt.setInt(6, Integer.parseInt(feeTransactionReq.getTotalScan()));
             cstmt.setString(7, feeTransactionReq.getRemark());
-            LocalDateTime localDateTime = LocalDateTime.now();
-            cstmt.setObject(8, localDateTime);
-            cstmt.setObject(9, localDateTime);
+            LocalDateTime localDateTime = LocalDateTime.parse(String.valueOf(LocalDateTime.now()),
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            cstmt.setString(8, String.valueOf(localDateTime));
+            cstmt.setString(9, String.valueOf(localDateTime));
 
             int row = cstmt.executeUpdate();
             if (row > 0) {
