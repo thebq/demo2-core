@@ -38,7 +38,7 @@ public class FeeCommandDA {
 
             int row = cstmt.executeUpdate();
             if (row > 0) {
-                    return true;
+                return true;
             }
         } catch (Exception e) {
             LOGGER.error("Add fee command code: {} FAIL, {}", createFeeCommandReq.getCommandCode(), e.getMessage());
