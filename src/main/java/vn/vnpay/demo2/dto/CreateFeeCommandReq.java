@@ -10,6 +10,7 @@ public class CreateFeeCommandReq {
     private String totalFee;
     private String createdUser;
     private String createdDate;
+    private List<CreateFeeTransactionReq> transactions;
 
     public List<CreateFeeTransactionReq> getTransactions() {
         return transactions;
@@ -18,8 +19,6 @@ public class CreateFeeCommandReq {
     public void setTransactions(List<CreateFeeTransactionReq> transactions) {
         this.transactions = transactions;
     }
-
-    private List<CreateFeeTransactionReq> transactions;
 
     public String getRequestId() {
         return requestId;

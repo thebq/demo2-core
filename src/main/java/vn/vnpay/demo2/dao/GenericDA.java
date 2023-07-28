@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 
 public class GenericDA {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericDA.class);
+
     public void closePreparedStatement(PreparedStatement cstmt) {
         try {
             if (cstmt != null)

@@ -27,13 +27,15 @@ public class FeeCommandServiceImpl implements FeeCommandService {
     private final ValidationService validationService;
     private final FeeCommandUtil feeCommandUtil;
     private final FeeCommandDA feeCommandDA;
+    private final RedisService redisService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeCommandServiceImpl.class);
 
     @Inject
-    public FeeCommandServiceImpl(ValidationService validationService, FeeCommandUtil feeCommandUtil, FeeCommandDA feeCommandDA) {
+    public FeeCommandServiceImpl(ValidationService validationService, FeeCommandUtil feeCommandUtil, FeeCommandDA feeCommandDA, RedisService redisService) {
         this.validationService = validationService;
         this.feeCommandUtil = feeCommandUtil;
         this.feeCommandDA = feeCommandDA;
+        this.redisService = redisService;
     }
 
     @Override
@@ -50,6 +52,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
                         "Request Id exist", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
+            redisService.setValueToRedis(createFeeCommandReq.getRequestId(), createFeeCommandReq.getRequestId());
 
             if (validationService.checkRequestTimeExpire(createFeeCommandReq.getRequestTime())) {
                 Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
@@ -95,6 +98,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
                         "Request Id exist", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
+            redisService.setValueToRedis(updateFeeCommandReq.getRequestId(), updateFeeCommandReq.getRequestId());
 
             if (validationService.checkRequestTimeExpire(updateFeeCommandReq.getRequestTime())) {
                 Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),

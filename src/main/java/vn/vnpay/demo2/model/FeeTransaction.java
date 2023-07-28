@@ -1,6 +1,7 @@
 package vn.vnpay.demo2.model;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 public class FeeTransaction {
     private String transactionCode;
@@ -10,8 +11,8 @@ public class FeeTransaction {
     private String accountNumber;
     private Integer totalScan;
     private String remark;
-    private Date createDate;
-    private Date modifiedDate;
+    private LocalDateTime createDate;
+    private LocalDateTime modifiedDate;
 
     public String getTransactionCode() {
         return transactionCode;
@@ -69,19 +70,19 @@ public class FeeTransaction {
         this.remark = remark;
     }
 
-    public Date getCreateDate() {
+    public LocalDateTime getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
 
-    public Date getModifiedDate() {
+    public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(Date modifiedDate) {
+    public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 }

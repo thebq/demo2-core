@@ -2,18 +2,16 @@ package vn.vnpay.demo2.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vn.vnpay.demo2.constant.FeeCommandConstant;
 import vn.vnpay.demo2.dto.CreateFeeCommandReq;
 import vn.vnpay.demo2.dto.CreateFeeTransactionReq;
-import vn.vnpay.demo2.model.FeeCommand;
 import vn.vnpay.demo2.model.FeeTransaction;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +33,7 @@ public class FeeCommandDA {
             cstmt.setInt(2, Integer.parseInt(createFeeCommandReq.getTotalRecord()));
             cstmt.setInt(3, Integer.parseInt(createFeeCommandReq.getTotalFee()));
             cstmt.setString(4, createFeeCommandReq.getCreatedUser());
-            LocalDateTime localDateTime = LocalDateTime.parse(String.valueOf(LocalDateTime.now()),
-                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            LocalDateTime localDateTime = LocalDateTime.now();
             cstmt.setString(5, String.valueOf(localDateTime));
 
             int row = cstmt.executeUpdate();
@@ -67,8 +64,7 @@ public class FeeCommandDA {
             cstmt.setString(5, feeTransactionReq.getAccountNumber());
             cstmt.setInt(6, Integer.parseInt(feeTransactionReq.getTotalScan()));
             cstmt.setString(7, feeTransactionReq.getRemark());
-            LocalDateTime localDateTime = LocalDateTime.parse(String.valueOf(LocalDateTime.now()),
-                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            LocalDateTime localDateTime = LocalDateTime.now();
             cstmt.setString(8, String.valueOf(localDateTime));
             cstmt.setString(9, String.valueOf(localDateTime));
 
@@ -101,15 +97,15 @@ public class FeeCommandDA {
             rs = cstmt.executeQuery();
             while (rs.next()) {
                 FeeTransaction feeTransaction = new FeeTransaction();
-                feeTransaction.setTransactionCode(rs.getString("transactioncode"));
-                feeTransaction.setCommandCode(rs.getString("commandcode"));
-                feeTransaction.setFeeAmount(rs.getInt("feeamount"));
-                feeTransaction.setStatus(rs.getString("status"));
-                feeTransaction.setAccountNumber(rs.getString("accountnumber"));
-                feeTransaction.setTotalScan(rs.getInt("totalscan"));
-                feeTransaction.setRemark(rs.getString("remark"));
-                feeTransaction.setCreateDate(rs.getDate("createdate"));
-                feeTransaction.setModifiedDate(rs.getDate("modifieddate"));
+                feeTransaction.setTransactionCode(rs.getString(FeeCommandConstant.TRANSACTION_CODE));
+                feeTransaction.setCommandCode(rs.getString(FeeCommandConstant.COMMAND_CODE));
+                feeTransaction.setFeeAmount(rs.getInt(FeeCommandConstant.FEE_AMOUNT));
+                feeTransaction.setStatus(rs.getString(FeeCommandConstant.STATUS));
+                feeTransaction.setAccountNumber(rs.getString(FeeCommandConstant.ACCOUNT_NUMBER));
+                feeTransaction.setTotalScan(rs.getInt(FeeCommandConstant.TOTAL_SCAN));
+                feeTransaction.setRemark(rs.getString(FeeCommandConstant.REMARK));
+                feeTransaction.setCreateDate(LocalDateTime.parse(rs.getString(FeeCommandConstant.CREATE_DATE)));
+                feeTransaction.setModifiedDate(LocalDateTime.parse(rs.getString(FeeCommandConstant.MODIFIED_DATE)));
                 feeTransactionList.add(feeTransaction);
             }
         } catch (SQLException e) {
@@ -133,9 +129,7 @@ public class FeeCommandDA {
             String sql = "UPDATE feetransaction SET totalscan = ?, modifieddate = ?, status = ? WHERE transactioncode = ?";
             cstmt = conn.prepareCall(sql);
             cstmt.setInt(1, feeTransaction.getTotalScan());
-            long millis = System.currentTimeMillis();
-            Date date = new Date(millis);
-            cstmt.setDate(2, date);
+            cstmt.setString(2, String.valueOf(LocalDateTime.now()));
             cstmt.setString(3, feeTransaction.getStatus());
             cstmt.setString(4, feeTransaction.getTransactionCode());
             int row = cstmt.executeUpdate();
@@ -154,60 +148,6 @@ public class FeeCommandDA {
                 feeTransaction.getTransactionCode(), feeTransaction.getCommandCode());
     }
 
-    public List<FeeCommand> getAllFeeCommand() {
-        Connection conn = null;
-        ResultSet rs = null;
-        List<FeeCommand> feeCommandList = new ArrayList<>();
-        LOGGER.info("START Get command code list");
-        try {
-            conn = connectionPool.getConnection();
-            String sql = "SELECT * FROM feecommand";
-            cstmt = conn.prepareCall(sql);
-            rs = cstmt.executeQuery();
-            while (rs.next()) {
-                FeeCommand feeCommand = new FeeCommand();
-                feeCommand.setCommandCode(rs.getString("commandcode"));
-                feeCommand.setTotalFee(rs.getInt("totalfee"));
-                feeCommand.setTotalRecord(rs.getInt("totalrecord"));
-                feeCommand.setCreatedDate(rs.getDate("createdate"));
-                feeCommand.setCreatedUser(rs.getString("createuser"));
-                feeCommandList.add(feeCommand);
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Get command code list FAIL");
-            return null;
-        } finally {
-            genericDA.closeResultSet(rs);
-            genericDA.closePreparedStatement(cstmt);
-            genericDA.closeConnection(conn);
-        }
-        LOGGER.info("FINISH Get command code list");
-        return feeCommandList;
-    }
-
-    public void updateFeeCommand(String commandCode, Integer totalRecord, Integer totalFee) {
-        Connection conn = null;
-        LOGGER.info("START fee transaction, command code: {}", commandCode);
-        try {
-            conn = connectionPool.getConnection();
-            String sql = "UPDATE feecommand SET totalrecord = ?, totalfee = ? WHERE commandcode = ?";
-            cstmt = conn.prepareCall(sql);
-            cstmt.setInt(1, totalRecord);
-            cstmt.setInt(2, totalFee);
-            cstmt.setString(3, commandCode);
-            int row = cstmt.executeUpdate();
-            if (row > 0) {
-                LOGGER.info("Update fee transaction SUCCESS, command code: {}", commandCode);
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Update fee transaction FAIL, command code: {}", commandCode);
-        } finally {
-            genericDA.closePreparedStatement(cstmt);
-            genericDA.closeConnection(conn);
-        }
-        LOGGER.info("FINISH fee transaction, command code: {}", commandCode);
-    }
-
     public List<FeeTransaction> getFeeTransactionByTotalScan() throws SQLException {
         Connection conn = null;
         ResultSet rs = null;
@@ -220,15 +160,15 @@ public class FeeCommandDA {
             rs = cstmt.executeQuery();
             while (rs.next()) {
                 FeeTransaction feeTransaction = new FeeTransaction();
-                feeTransaction.setTransactionCode(rs.getString("transactioncode"));
-                feeTransaction.setCommandCode(rs.getString("commandcode"));
-                feeTransaction.setFeeAmount(rs.getInt("feeamount"));
-                feeTransaction.setStatus(rs.getString("status"));
-                feeTransaction.setAccountNumber(rs.getString("accountnumber"));
-                feeTransaction.setTotalScan(rs.getInt("totalscan"));
-                feeTransaction.setRemark(rs.getString("remark"));
-                feeTransaction.setCreateDate(rs.getDate("createdate"));
-                feeTransaction.setModifiedDate(rs.getDate("modifieddate"));
+                feeTransaction.setTransactionCode(rs.getString(FeeCommandConstant.TRANSACTION_CODE));
+                feeTransaction.setCommandCode(rs.getString(FeeCommandConstant.COMMAND_CODE));
+                feeTransaction.setFeeAmount(rs.getInt(FeeCommandConstant.FEE_AMOUNT));
+                feeTransaction.setStatus(rs.getString(FeeCommandConstant.STATUS));
+                feeTransaction.setAccountNumber(rs.getString(FeeCommandConstant.ACCOUNT_NUMBER));
+                feeTransaction.setTotalScan(rs.getInt(FeeCommandConstant.TOTAL_SCAN));
+                feeTransaction.setRemark(rs.getString(FeeCommandConstant.REMARK));
+                feeTransaction.setCreateDate(LocalDateTime.parse(rs.getString(FeeCommandConstant.CREATE_DATE)));
+                feeTransaction.setModifiedDate(LocalDateTime.parse(rs.getString(FeeCommandConstant.MODIFIED_DATE)));
                 feeTransactionList.add(feeTransaction);
             }
         } catch (SQLException e) {

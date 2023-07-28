@@ -4,10 +4,11 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vn.vnpay.demo2.constant.FeeCommandConstant;
 import vn.vnpay.demo2.dto.CreateFeeCommandReq;
 import vn.vnpay.demo2.model.Result;
-import vn.vnpay.demo2.util.LocalProperties;
 import vn.vnpay.demo2.util.FeeCommandUtil;
+import vn.vnpay.demo2.util.LocalProperties;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,19 +21,31 @@ public class ValidationService {
     private final RedisService redisService = new RedisService();
 
     public FullHttpResponse validationFeeCommand(CreateFeeCommandReq createFeeCommandReq) {
-        FullHttpResponse response = null;
         if (Objects.isNull(createFeeCommandReq)) {
             LOGGER.info("Body request is missing");
             Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
                     "Body request is missing", null);
-            response = feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
+            return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
         }
-        return response;
+
+        if (Objects.isNull(createFeeCommandReq.getCommandCode())) {
+            LOGGER.info("Command code is missing");
+            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                    "Command code is missing", null);
+            return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
+        }
+
+        if (Objects.isNull(createFeeCommandReq.getTotalRecord())) {
+            LOGGER.info("Total record is missing");
+            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+                    "Total record is missing", null);
+            return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
+        }
+        return null;
     }
 
     public Boolean checkRequestIdExist(String requestId) {
-        LocalDateTime dateTime = LocalDateTime.now();
-        if (redisService.checkExist(String.valueOf(dateTime), requestId)) {
+        if (redisService.checkExist(requestId)) {
             LOGGER.info("Request Id exist: {}", requestId);
             return true;
         }
@@ -43,12 +56,12 @@ public class ValidationService {
         long millis = System.currentTimeMillis();
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(requestTime,
-                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    DateTimeFormatter.ofPattern(FeeCommandConstant.YYYYMMDDHHMMSS));
             long request = localDateTime
                     .atZone(ZoneId.systemDefault())
                     .toInstant().toEpochMilli();
-            if (millis - request > Long.parseLong(LocalProperties.get("time-expire").toString())
-                    || request - millis > Long.parseLong(LocalProperties.get("time-expire").toString())) {
+            if (millis - request > Long.parseLong(LocalProperties.get(FeeCommandConstant.TIME_EXPIRE).toString())
+                    || request - millis > Long.parseLong(LocalProperties.get(FeeCommandConstant.TIME_EXPIRE).toString())) {
                 LOGGER.info("Request time expire");
                 return true;
             }
