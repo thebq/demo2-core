@@ -1,5 +1,8 @@
 package vn.vnpay.demo2.dto;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class CreateFeeTransactionReq {
     private String transactionCode;
     private String commandCode;

@@ -1,7 +1,10 @@
 package vn.vnpay.demo2.dto;
 
 import java.util.List;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class CreateFeeCommandReq {
     private String requestId;
     private String requestTime;

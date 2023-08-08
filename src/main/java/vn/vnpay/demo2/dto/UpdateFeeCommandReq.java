@@ -1,5 +1,8 @@
 package vn.vnpay.demo2.dto;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class UpdateFeeCommandReq {
     private String requestId;
     private String requestTime;

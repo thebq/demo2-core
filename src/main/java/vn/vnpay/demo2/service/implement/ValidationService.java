@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.demo2.constant.FeeCommandConstant;
 import vn.vnpay.demo2.dto.CreateFeeCommandReq;
+import vn.vnpay.demo2.enums.MetaData;
 import vn.vnpay.demo2.model.Result;
 import vn.vnpay.demo2.util.FeeCommandUtil;
 import vn.vnpay.demo2.util.LocalProperties;
@@ -15,6 +16,10 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class ValidationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationService.class);
     private final FeeCommandUtil feeCommandUtil = new FeeCommandUtil();
@@ -23,22 +28,22 @@ public class ValidationService {
     public FullHttpResponse validationFeeCommand(CreateFeeCommandReq createFeeCommandReq) {
         if (Objects.isNull(createFeeCommandReq)) {
             LOGGER.info("Body request is missing");
-            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
-                    "Body request is missing", null);
+            Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
+                    MetaData.FAIL_REQUEST.getMessage(), null);
             return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
         }
 
         if (Objects.isNull(createFeeCommandReq.getCommandCode())) {
             LOGGER.info("Command code is missing");
-            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
-                    "Command code is missing", null);
+            Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
+                    MetaData.FAIL_REQUEST.getMessage(), null);
             return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
         }
 
         if (Objects.isNull(createFeeCommandReq.getTotalRecord())) {
             LOGGER.info("Total record is missing");
-            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
-                    "Total record is missing", null);
+            Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
+                    MetaData.FAIL_REQUEST.getMessage(), null);
             return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
         }
         return null;

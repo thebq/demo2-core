@@ -23,6 +23,10 @@ import java.util.Objects;
 import static com.aventrix.jnanoid.jnanoid.NanoIdUtils.DEFAULT_ALPHABET;
 import static com.aventrix.jnanoid.jnanoid.NanoIdUtils.DEFAULT_NUMBER_GENERATOR;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class FeeCommandServiceImpl implements FeeCommandService {
     private final ValidationService validationService;
     private final FeeCommandUtil feeCommandUtil;
@@ -48,14 +52,14 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             if (Objects.nonNull(response))
                 return response;
             if (validationService.checkRequestIdExist(createFeeCommandReq.getRequestId())) {
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
                         "Request Id exist", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
             redisService.setValueToRedis(createFeeCommandReq.getRequestId(), createFeeCommandReq.getRequestId());
 
             if (validationService.checkRequestTimeExpire(createFeeCommandReq.getRequestTime())) {
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
                         "Request time expire", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
@@ -63,8 +67,8 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             createFeeCommandReq.setCommandCode(NanoIdUtils.randomNanoId(DEFAULT_NUMBER_GENERATOR, DEFAULT_ALPHABET, 11));
             if (!feeCommandDA.addFeeCommand(createFeeCommandReq)) {
                 LOGGER.info("Save fee command to database Fail");
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
-                        MetaData.BAD_REQUEST.getMessage(), null);
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
+                        MetaData.FAIL_REQUEST.getMessage(), null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
             }
             if (Objects.nonNull(createFeeCommandReq.getTransactions())) {
@@ -76,7 +80,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
             }
         } catch (Exception e) {
             LOGGER.error("Fail to request: {}", e.getMessage());
-            Result result = new Result(String.valueOf(HttpResponseStatus.BAD_REQUEST.code()),
+            Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
                     "Fail to request", null);
             return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
         }
@@ -84,7 +88,7 @@ public class FeeCommandServiceImpl implements FeeCommandService {
         LOGGER.info("FINISH create fee command code: {}, request Id: {}", createFeeCommandReq.getCommandCode(),
                 createFeeCommandReq.getRequestId());
 
-        Result result = new Result(String.valueOf(HttpResponseStatus.OK.code()),
+        Result result = new Result(String.valueOf(MetaData.SUCCESS.getMetaCode()),
                 "Success", null);
         return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
     }
@@ -94,22 +98,22 @@ public class FeeCommandServiceImpl implements FeeCommandService {
         LOGGER.info("START update fee transaction by command code: {}", updateFeeCommandReq.getCommandCode());
         try {
             if (validationService.checkRequestIdExist(updateFeeCommandReq.getRequestId())) {
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
                         "Request Id exist", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
             redisService.setValueToRedis(updateFeeCommandReq.getRequestId(), updateFeeCommandReq.getRequestId());
 
             if (validationService.checkRequestTimeExpire(updateFeeCommandReq.getRequestTime())) {
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
                         "Request time expire", null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.BAD_REQUEST, result.toString());
             }
 
             List<FeeTransaction> feeTransactionList = feeCommandDA.getFeeTransactionByCmdCode(updateFeeCommandReq.getCommandCode());
             if (Objects.isNull(feeTransactionList)) {
-                Result result = new Result(String.valueOf(MetaData.BAD_REQUEST.getMetaCode()),
-                        MetaData.BAD_REQUEST.getMessage(), null);
+                Result result = new Result(String.valueOf(MetaData.FAIL_REQUEST.getMetaCode()),
+                        MetaData.FAIL_REQUEST.getMessage(), null);
                 return feeCommandUtil.createResponse(HttpResponseStatus.OK, result.toString());
             }
             if (feeTransactionList.isEmpty()) {

@@ -1,8 +1,11 @@
 package vn.vnpay.demo2.model;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class FeeTransaction {
     private String transactionCode;
     private String commandCode;

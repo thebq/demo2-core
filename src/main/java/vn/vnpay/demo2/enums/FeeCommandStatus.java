@@ -1,5 +1,8 @@
 package vn.vnpay.demo2.enums;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public enum FeeCommandStatus {
     KHOI_TAO("01", "Khoi tao"),
     THU_PHI("02", "Thu phi"),

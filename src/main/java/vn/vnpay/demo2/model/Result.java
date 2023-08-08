@@ -1,5 +1,8 @@
 package vn.vnpay.demo2.model;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class Result {
     private String code;
     private String message;

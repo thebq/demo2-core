@@ -1,7 +1,10 @@
 package vn.vnpay.demo2.model;
 
 import java.util.Date;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class FeeCommand {
     private String commandCode;
     private Integer totalRecord;

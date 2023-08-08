@@ -24,6 +24,10 @@ import vn.vnpay.demo2.util.LocalProperties;
 
 import java.io.IOException;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class NettyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyServer.class);
 

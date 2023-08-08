@@ -8,6 +8,10 @@ import redis.clients.jedis.JedisPool;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class RedisService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
     private static final JedisPool jedisPool = new JedisPool();

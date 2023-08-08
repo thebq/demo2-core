@@ -1,19 +1,24 @@
-package vn.vnpay.demo2.model;
+package vn.vnpay.demo2.schedule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.vnpay.demo2.dao.FeeCommandDA;
 import vn.vnpay.demo2.enums.FeeCommandStatus;
+import vn.vnpay.demo2.model.FeeTransaction;
 
-import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.TimerTask;
 
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 public class FeeTask extends TimerTask {
     private final FeeCommandDA feeCommandDA = new FeeCommandDA();
     private static final Logger LOGGER = LoggerFactory.getLogger(FeeTask.class);
+
     @Override
     public void run() {
         LOGGER.info("START cron job");

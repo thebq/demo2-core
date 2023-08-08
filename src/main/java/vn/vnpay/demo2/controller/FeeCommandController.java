@@ -21,7 +21,10 @@ import vn.vnpay.demo2.service.FeeCommandService;
 import vn.vnpay.demo2.util.FeeCommandUtil;
 
 import java.nio.charset.StandardCharsets;
-
+/**
+ * @author thebq
+ * Created: 03/08/2023
+ */
 @ChannelHandler.Sharable
 public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRequest> {
     private final FeeCommandService feeCommandService;
@@ -51,7 +54,7 @@ public class FeeCommandController extends SimpleChannelInboundHandler<FullHttpRe
                 handleRequest(ctx);
             }
         } catch (Exception e) {
-            LOGGER.error("Fail to request. {}", e.getMessage());
+            LOGGER.error("Fail to request: ", e);
         }
     }
 
